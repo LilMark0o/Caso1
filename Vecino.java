@@ -1,22 +1,10 @@
 public class Vecino {
-    private int fila;
-    private int columna;
     private boolean recibioNotificacion;
     private Celda celda;
 
     public Vecino(int fila, int columna, Celda celda) {
-        this.fila = fila;
-        this.columna = columna;
         this.recibioNotificacion = false;
         this.celda = celda;
-    }
-
-    public int getFila() {
-        return fila;
-    }
-
-    public int getColumna() {
-        return columna;
     }
 
     public boolean getRecibioNotificacion() {

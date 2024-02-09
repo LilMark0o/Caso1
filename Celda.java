@@ -5,7 +5,7 @@ import java.util.concurrent.CountDownLatch;
 class Celda extends Thread {
     private int fila;
     private int capacidadBuzon;
-    private Integer pendientes;
+    private Pendientes pendientes;
     private int columna;
     private BlockingQueue<Boolean> buzon;
     private Vecino[] vecinos;
@@ -18,7 +18,7 @@ class Celda extends Thread {
     public Celda(int fila, int columna, boolean valor) {
         this.fila = fila;
         this.capacidadBuzon = fila + 1;
-        this.pendientes = 0;
+        this.pendientes = new Pendientes();
         this.columna = columna;
         this.state = valor;
         this.buzon = new ArrayBlockingQueue<>(capacidadBuzon);
@@ -68,7 +68,7 @@ class Celda extends Thread {
         vecinosVivos = 0;
         mensajesRecibidos = 0;
         mensajesEnviados = 0;
-        pendientes = 0;
+        pendientes.resetPendientes();
         buzon.clear();
         for (Vecino vecino : vecinos) {
             vecino.reset();
@@ -83,7 +83,8 @@ class Celda extends Thread {
                     vecinosVivos++;
                 }
                 mensajesRecibidos++;
-                pendientes--;
+                pendientes.decrementPendientes();
+                ;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -102,15 +103,20 @@ class Celda extends Thread {
         }
     }
 
+    // TODO preguntar porqué no sirve
     public boolean recibirMensaje(boolean mensaje) {
-        synchronized (pendientes) {
-            if (pendientes < capacidadBuzon) {
-                pendientes++;
-                buzon.add(mensaje);
-                return true;
-            } else {
-                return false;
+        try {
+            synchronized (pendientes) {
+                if (pendientes.getPendientes() < capacidadBuzon) {
+                    pendientes.incrementPendientes();
+                    buzon.add(mensaje);
+                    return true;
+                } else {
+                    return false;
+                }
             }
+        } catch (IllegalStateException e) {
+            return false;
         }
     }
 
