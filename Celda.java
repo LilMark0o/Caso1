@@ -77,16 +77,17 @@ class Celda extends Thread {
 
     public void revisarMensajes() {
         while (!buzon.isEmpty()) {
-            try {
-                boolean mensaje = buzon.take();
-                if (mensaje) {
-                    vecinosVivos++;
+            synchronized (pendientes) {
+                try {
+                    boolean mensaje = buzon.take();
+                    if (mensaje) {
+                        vecinosVivos++;
+                    }
+                    mensajesRecibidos++;
+                    pendientes.decrementPendientes();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-                mensajesRecibidos++;
-                pendientes.decrementPendientes();
-                ;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -105,19 +106,20 @@ class Celda extends Thread {
 
     // TODO preguntar porqué no sirve
     public boolean recibirMensaje(boolean mensaje) {
-        try {
-            synchronized (pendientes) {
-                if (pendientes.getPendientes() < capacidadBuzon) {
-                    pendientes.incrementPendientes();
-                    buzon.add(mensaje);
-                    return true;
-                } else {
-                    return false;
-                }
+        // try {
+        synchronized (pendientes) {
+            if (pendientes.getPendientes() < capacidadBuzon) {
+                pendientes.incrementPendientes();
+                buzon.add(mensaje);
+                return true;
+            } else {
+                return false;
             }
-        } catch (IllegalStateException e) {
-            return false;
         }
+
+        // } catch (IllegalStateException e) {
+        // return false;
+        // }
     }
 
     public void seekRealVecinos(Celda[][] matrix) {
