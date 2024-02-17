@@ -59,6 +59,7 @@ class Celda extends Thread {
         while (vecinos.length != mensajesRecibidos || vecinos.length != mensajesEnviados) {
             mandarMensajesAVecinos();
             revisarMensajes();
+            Thread.yield();
         }
         changeState(nextState());
         restartData();
